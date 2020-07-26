@@ -1,0 +1,70 @@
+body {
+  font-family: sans-serif;
+  font-size: 16px;
+}
+
+header {
+}
+
+/* MENU BAR */
+.menu {
+  background-color: darkgreen;
+  padding: 20px 20px 20px 0;
+}
+
+.menu-list {
+  list-style: none; /* removes bullets from list */
+  margin: 0;
+  padding: 0;
+}
+
+.menu-item {
+  display: inline; /* menu items horizontal */
+}
+
+.menu-item a {
+  color: white;
+  text-decoration: none; /* makes menu links not underlined */
+  padding: 20px;
+}
+
+.menu-item a:hover {
+  background-color: white;
+  color: black;
+}
+
+.menu-item a.active {
+  background-color: white;
+  color: black;
+}
+
+/* CAROUSEL */
+.center-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+#carousel-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.select-img {
+  background-color: darkgrey;
+  border-radius: 50%;
+  height: 20px;
+  width: 20px;
+}
+
+.select-img:hover {
+  background-color: gray;
+}
+
+.next-img {
+  background-color: darkgrey;
+  height: 30px;
+  width: 20px;
+}

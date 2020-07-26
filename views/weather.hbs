@@ -1,0 +1,17 @@
+<h1>The response from Open Weather Map is:</h1>
+<table>
+  <thead>
+  <tr>
+    <th>Parameter</th>
+    <th>Value</th>
+  </tr>
+  </thead>
+  <tbody>
+  {{#each sentData}}
+    <tr>
+      <td>{{this.name}}</td>
+      <td>{{this.value}}</td>
+    </tr>
+  {{/each}}
+  </tbody>
+</table>
