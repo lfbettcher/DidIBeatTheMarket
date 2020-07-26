@@ -45,7 +45,6 @@ function autoChange() {
 
 function selectImg(btnId) {
   return function () {
-    console.log(btnId);
     if (btnId == "img1") {
       carouselImg.src = IMAGES[0];
     } else if (btnId == "img2") {

@@ -26,7 +26,8 @@ const getQueryParams = (req, res, next) => {
 app.use(getQueryParams);
 
 app.get("/", (req, res) => {
-  res.render("carousel");
+  let context = { showTitle: true, title: "Did I Beat the Market?" };
+  res.render("carousel", context);
 });
 
 app.get("/my-assets", (req, res) => {
