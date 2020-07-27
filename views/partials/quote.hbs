@@ -1,0 +1,19 @@
+<h2>Get a quick quote</h2>
+<form method="get">
+  <input type="text" name="stock" id="stock">
+  <input type="submit" name="getQuote" value="Get quote">
+</form>
+<h3>The current Price of {{this.stock}} is ${{this.price}}</h3>
+    {{#if stock}}
+  <ul>
+        {{#each stock}}
+      <li>
+        <h3>{{this.name}}</h3>
+        <form method="post">
+          <input type="hidden" name="id" value="{{this.id}}">
+          <input type="submit" name="Done" value="Mark as Done">
+        </form>
+      </li>
+        {{/each}}
+  </ul>
+    {{/if}}

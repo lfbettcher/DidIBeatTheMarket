@@ -1,1 +1,37 @@
-<h1>My Assets</h1>
+{{>menu}}
+<h1>Did I beat the market?</h1>
+<section id="myAssets">
+  <h2>Compare your overall portfolio value</h2>
+  <form action="/my-assets" id="enterMyAssets" method="get">
+    <fieldset>
+      <legend>Enter your data</legend>
+      <label for="startDate">
+        Start Date:
+        <input type="date" name="startDate" id="startDate">
+      </label>
+      <label for="startValue">
+        Start Value $
+        <input type="number" step="0.01" name="startValue" id="startValue">
+      </label>
+      <label for="endDate">
+        End Date:
+        <input type="date" name="endDate" id="endDate">
+      </label>
+      <label for="endValue">
+        End Value $
+        <input type="number" step="0.01" name="endValue" id="endValue">
+      </label>
+      <input type="submit" id="submitMyAssets">
+    </fieldset>
+  </form>
+  <br>
+<!--  {{stockData}} TODO-->
+  <div id="myAssetsResult">
+    {{#if startSPYprice}}
+    <p>Start SPY price: {{startSPYprice}}</p>
+    {{/if}}
+    {{#if startSPYshares}}
+      <p>Start SPY shares: {{startSPYshares}}</p>
+    {{/if}}
+  </div>
+</section>

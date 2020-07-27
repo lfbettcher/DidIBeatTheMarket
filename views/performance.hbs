@@ -1,1 +1,33 @@
-<h1>Performance</h1>
+{{>menu}}
+<h1>Did a Fund Beat the Market?</h1>
+<form id="select-funds-form" action="/performance" method="get" name="fundsForm">
+  <select form="select-funds-form" id="select-funds" name="funds" multiple>
+    <optgroup label="Broad Market Funds">
+      <option value="SPY">SPDR S&P 500 ETF (SPY)</option>
+      <option value="IWF">iShares Russell 1000 Growth ETF (IWF)</option>
+      <option value="VTV">Vanguard Value ETF (VTV)</option>
+      <option value="USMV">iShares Edge MSCI Minimum Volatility USA ETF (USMV)</option>
+    </optgroup>
+    <optgroup label="Large Cap Growth">
+      <option value="VEA">Vanguard FTSE Developed Markets ETF (VEA)</option>
+      <option value="VWO">Vanguard FTSE Emerging Markets ETF (VWO)</option>
+      <option value="AGG">iShares Core U.S. Aggregate Bond ETF (AGG)</option>
+      <option value="LQD">iShares iBoxx $ Investment Grade Corporate Bond ETF (LQD)</option>
+      <option value="GLD">SPDR Gold Shares (GLD)</option>
+    </optgroup>
+    <optgroup label="Commodities">
+      <option>Robert Fuller</option>
+      <option>Janet White</option>
+      <option>Nancy Leverling</option>
+      <option>Robert Buchanan</option>
+      <option>Margaret Buchanan</option>
+      <option>Andrew Fuller</option>
+      <option>Anne Davolio</option>
+      <option>Andrew Suyama</option>
+      <option>Nige Buchanan</option>
+      <option>Laura Fuller</option>
+    </optgroup>
+  </select>
+  <br>
+  <input id="submit-funds" type="submit" value="Compare!">
+</form>

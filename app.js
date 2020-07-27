@@ -11,9 +11,10 @@ app.set("view engine", "hbs");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(session({ secret: "SuperSecretPassword" }));
 app.use(express.static("public"));
 
-app.set("port", 3000);
+app.set("port", 3005);
 
 const getQueryParams = (req, res, next) => {
   let queryData = [];
@@ -25,70 +26,112 @@ const getQueryParams = (req, res, next) => {
 };
 app.use(getQueryParams);
 
-app.get("/", (req, res) => {
-  let context = { showTitle: true, title: "Did I Beat the Market?" };
-  res.render("carousel", context);
+const getBodyParams = (req, res, next) => {
+  let recData = [];
+  for (let param in req.body) {
+    recData.push({ name: param, value: req.body[param] });
+  }
+  res.locals.bodyParams = recData;
+  next();
+};
+app.use(getBodyParams);
+
+app.get("/", (req, res, next) => {
+  let context = { homeIsActive: "active" };
+  if (!req.session.name) {
+    res.render("home", context);
+    return;
+  }
+  context.name = req.session.name;
+  res.render("home", context);
 });
 
-app.get("/my-assets", (req, res) => {
-  res.render("myAssets");
-});
+// app.get("/my-assets", (req, res) => {
+//   let context = { assetsIsActive: "active" };
+//   res.render("myAssets", context);
+// });
 
 app.get("/performance", (req, res) => {
-  res.render("performance");
+  let context = { performanceIsActive: "active" };
+  res.render("performance", context);
 });
 
 app.get("/about", (req, res) => {
-  res.render("about");
+  let context = { aboutIsActive: "active" };
+  res.render("about", context);
 });
 
-// app.get("/", (req, res, next) => {
-//   let context = {};
-//   context.stockPrices = [];
-//   request(
-//     `http://api.openweathermap.org/data/2.5/weather?q=corvallis&APPID=${credentials.owmKey}`,
-//     handleGet
-//   );
-//   request(
-//     `http://api.openweathermap.org/data/2.5/weather?q=seattle&APPID=${credentials.owmKey}`,
-//     handleGet
-//   );
-//
-//   function handleGet(error, response, body) {
-//     if (!error && response.statusCode < 400) {
-//       context.weather.push({ value: body });
-//       request(
-//         {
-//           url: "http://httpbin.org/post",
-//           method: "POST",
-//           headers: { "Content-Type": "application/json" },
-//           body: '{"foo":"bar","number":1}',
-//         },
-//         handlePost
-//       );
-//     } else {
-//       if (response) {
-//         console.log(response.statusCode);
-//       }
-//       console.log(error);
-//       next(error);
-//     }
-//   }
-//
-//   function handlePost(error, response, body) {
-//     if (!error && response.statusCode < 400) {
-//       context.httpbin = body;
-//       res.render("weather", context);
-//     } else {
-//       if (response) {
-//         console.log(response.statusCode);
-//       }
-//       console.log(error);
-//       next(error);
-//     }
-//   }
+let queryType = "TIME_SERIES_DAILY";
+let stockSymbol = "SPY";
+const prices = ["1. open", "2. high", "3. low", "4. close"];
+const URL = `https://www.alphavantage.co/query?function=${queryType}&symbol=${stockSymbol}&apikey=${credentials.alphavantageKey}`;
+
+app.get("/my-assets", (req, res, next) => {
+  let context = { assetsIsActive: "active" };
+  request(URL, (err, response, body) => {
+    if (!err && response.statusCode < 400) {
+      context.stockData = body;
+      res.render("myAssets", context);
+    } else {
+      if (response) {
+        console.log(response.statusCode);
+      }
+      next(err);
+    }
+  });
+});
+// let sentData = [];
+// console.log(req.query);
+// for (let param in req.query) {
+//   sentData.push({ name: param, value: req.query[param] });
+// }
+// res.locals.queryParams = sentData;
+// context.sentData = res.locals.queryParams;
+// console.log(context.sentData);
+// res.render("myAssets", context);
 // });
 
+app.post("/my-assets", (req, res, next) => {
+  // let input = {
+  //   startDate: req.body.startDate,
+  //   startValue: req.body.startValue,
+  //   endDate: req.body.endDate,
+  //   endValue: req.body.endValue,
+  // };
+  // for faster testing
+  let input = {
+    startDate: "2020-07-09",
+    startValue: 2134,
+    endDate: "2020-07-22",
+    endValue: 1234,
+  };
+  let context = {};
+  request(URL, (err, response, body) => {
+    if (!err && res.statusCode < 400) {
+      let stockData = JSON.parse(body);
+      let startDatePrices = stockData["Time Series (Daily)"][input.startDate];
+      let avgStartDatePrice = averagePrices(startDatePrices);
+      console.log(avgStartDatePrice);
+      context.startSPYprice = avgStartDatePrice;
+      context.startSPYshares = input.startValue / avgStartDatePrice;
+      res.render("myAssets", context);
+    } else {
+      if (response) {
+        console.log(response.statusCode);
+      }
+      next(err);
+    }
+  });
+});
+
+function averagePrices(data) {
+  delete data["5. volume"];
+  let sum = 0;
+  for (let param in data) {
+    sum += parseFloat(data[param]);
+  }
+  return sum / 4;
+}
 // app.get("/", (req, res) => {
 //   console.log(`========================`);
 //   console.log(req);
