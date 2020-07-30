@@ -77,7 +77,14 @@ a.active {
   width: 20px;
 }
 
-/* MY ASSETS FORM */
+/* QUICK QUOTE */
+
+/* MY ASSETS */
+table,
+td,
+th {
+  border: thin solid darkgreen;
+}
 
 /* SCROLL BOX */
 #select-funds {

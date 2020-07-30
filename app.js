@@ -3,18 +3,19 @@ const exphbs = require("express-handlebars");
 const session = require("express-session");
 const request = require("request");
 const credentials = require("./credentials.js");
+const stock = require("./stock");
 
 const app = express();
+app.set("port", 3005);
 
 app.engine("hbs", exphbs({ extname: "hbs" }));
 app.set("view engine", "hbs");
 
+app.use(session({ secret: "SuperSecretPassword" }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(session({ secret: "SuperSecretPassword" }));
 app.use(express.static("public"));
-
-app.set("port", 3005);
 
 const getQueryParams = (req, res, next) => {
   let queryData = [];
@@ -36,15 +37,57 @@ const getBodyParams = (req, res, next) => {
 };
 app.use(getBodyParams);
 
-app.get("/", (req, res, next) => {
-  let context = { homeIsActive: "active" };
-  if (!req.session.name) {
-    res.render("home", context);
-    return;
-  }
-  context.name = req.session.name;
-  res.render("home", context);
+const getStock = (obj) => {
+  return stock
+    .makeRequest(
+      `query?function=TIME_SERIES_DAILY&symbol=${obj.stockSymbol}&apikey=${credentials.avKey}`
+    )
+    .then((response) => {
+      console.log(response);
+      let dayData = response.data["Time Series (Daily)"]["2020-07-13"];
+      let dayAvg = averagePrices(dayData);
+      console.log(dayAvg);
+      obj.stockData = dayAvg;
+    });
+};
+
+app.get("/", (req, res) => {
+  // console.log(`========================`);
+  // console.log(req);
+  console.log(`========================`);
+  console.log(req.sessionStore);
+  console.log(`========================`);
+  // console.log(req.session);
+  // console.log(`========================`);
+  // console.log(req.session.id);
+  // console.log(`========================`);
+  // console.log(req.session.cookie);
+  res.render("home", req.session);
 });
+
+app.post("/", (req, res) => {
+  if (req.session.stocks) {
+    req.session.stocks.push(req.body);
+  } else {
+    req.session.stocks = [req.body];
+  }
+  let promises = [];
+  req.session.stocks.forEach((stock) => {
+    promises.push(getStock(stock));
+  });
+  Promise.all(promises).then((values) => {
+    res.render("home", req.session);
+  });
+});
+// app.get("/", (req, res, next) => {
+//   let context = { homeIsActive: "active" };
+//   if (!req.session.name) {
+//     res.render("home", context);
+//     return;
+//   }
+//   context.name = req.session.name;
+//   res.render("home", context);
+// });
 
 // app.get("/my-assets", (req, res) => {
 //   let context = { assetsIsActive: "active" };
@@ -67,15 +110,27 @@ const prices = ["1. open", "2. high", "3. low", "4. close"];
 const URL = `https://www.alphavantage.co/query?function=${queryType}&symbol=${stockSymbol}&apikey=${credentials.alphavantageKey}`;
 
 app.get("/my-assets", (req, res, next) => {
+  let qParams = [];
+  for (let p in req.query) {
+    qParams.push({ name: p, value: req.query[p] });
+  }
   let context = { assetsIsActive: "active" };
+  context.dataList = qParams;
   request(URL, (err, response, body) => {
     if (!err && response.statusCode < 400) {
-      context.stockData = body;
+      let stockData = JSON.parse(body);
+      let startDatePrices =
+        stockData["Time Series (Daily)"][qParams["startDate"]];
+      let avgStartDatePrice = averagePrices(startDatePrices);
+      console.log(avgStartDatePrice);
+      context.startSPYprice = avgStartDatePrice;
+      context.startSPYshares = qParams["startValue"] / avgStartDatePrice;
       res.render("myAssets", context);
     } else {
       if (response) {
         console.log(response.statusCode);
       }
+      res.render("/my-assets", context);
       next(err);
     }
   });
@@ -132,18 +187,6 @@ function averagePrices(data) {
   }
   return sum / 4;
 }
-// app.get("/", (req, res) => {
-//   console.log(`========================`);
-//   console.log(req);
-//   console.log(`========================`);
-//   console.log(req.sessionStore);
-//   console.log(`========================`);
-//   console.log(req.session);
-//   console.log(`========================`);
-//   console.log(req.session.id);
-//   console.log(`========================`);
-//   res.send(null);
-// });
 
 app.use((req, res) => {
   res.status(404);

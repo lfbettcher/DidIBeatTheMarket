@@ -1,19 +1,14 @@
-<h2>Get a quick quote</h2>
-<form method="get">
-  <input type="text" name="stock" id="stock">
-  <input type="submit" name="getQuote" value="Get quote">
-</form>
-<h3>The current Price of {{this.stock}} is ${{this.price}}</h3>
-    {{#if stock}}
+<section id="getQuote">
+  <h2>Get a quick quote</h2>
+  <form action="/" method="POST">
+    <input type="text" name="stockSymbol" placeholder="stock symbol">
+    <input type="submit" value="Submit">
+    <!--  <input type="button" value="Reset">-->
+  </form>
+  <h3>Quotes</h3>
   <ul>
-        {{#each stock}}
-      <li>
-        <h3>{{this.name}}</h3>
-        <form method="post">
-          <input type="hidden" name="id" value="{{this.id}}">
-          <input type="submit" name="Done" value="Mark as Done">
-        </form>
-      </li>
-        {{/each}}
+    {{#each stocks}}
+    <li>The current price of {{stockSymbol}} is ${{stockData}}</li>
+    {{/each}}
   </ul>
-    {{/if}}
+</section>

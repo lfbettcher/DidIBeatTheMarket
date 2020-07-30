@@ -25,8 +25,25 @@
     </fieldset>
   </form>
   <br>
-<!--  {{stockData}} TODO-->
-  <div id="myAssetsResult">
+  <div>
+    <table id="myAssetResult">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Asset/Fund</th>
+          <th>Start Date Value</th>
+          <th>End Date Value</th>
+          <th>Percent Change</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>The Market</td>
+          <td>{{startSPYprice}}</td>
+          <td>{{startSPYshares}}</td>
+        </tr>
+      </tbody>
+    </table>
     {{#if startSPYprice}}
     <p>Start SPY price: {{startSPYprice}}</p>
     {{/if}}
