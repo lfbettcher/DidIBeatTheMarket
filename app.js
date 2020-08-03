@@ -17,26 +17,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static("public"));
 
-const getQueryParams = (req, res, next) => {
-  let queryData = [];
-  for (let p in req.query) {
-    queryData.push({ name: p, value: req.query[p] });
-  }
-  res.locals.queryParams = queryData;
-  next();
-};
-app.use(getQueryParams);
-
-const getBodyParams = (req, res, next) => {
-  let recData = [];
-  for (let param in req.body) {
-    recData.push({ name: param, value: req.body[param] });
-  }
-  res.locals.bodyParams = recData;
-  next();
-};
-app.use(getBodyParams);
-
 const getStockNow = (obj) => {
   return stock
     .makeRequest(
@@ -47,6 +27,9 @@ const getStockNow = (obj) => {
       let prices = priceData[Object.keys(priceData)[0]];
       let price = prices[Object.keys(prices)[0]];
       obj.stockData = Number(price).toFixed(2);
+    })
+    .catch((e) => {
+      obj.stockData = " Invalid stock symbol";
     });
 };
 
@@ -65,7 +48,7 @@ app.get("/", (req, res) => {
   res.render("home", req.session);
 });
 
-// keeps a running list of stock quote prices
+// keeps a running list of stock quote prices with session
 app.post("/", (req, res) => {
   if (req.session.stocks) {
     req.session.stocks.push(req.body);
@@ -97,36 +80,10 @@ app.get("/about", (req, res) => {
   res.render("about", context);
 });
 
+// settings for market comparison
 let queryType = "TIME_SERIES_DAILY";
 let stockSymbol = "SPY";
 const URL = `https://www.alphavantage.co/query?function=${queryType}&symbol=${stockSymbol}&apikey=${credentials.avKey}`;
-
-// app.get("/my-assets", (req, res, next) => {
-//   let qParams = [];
-//   for (let p in req.query) {
-//     qParams.push({ name: p, value: req.query[p] });
-//   }
-//   let context = { assetsIsActive: "active" };
-//   context.dataList = qParams;
-//   request(URL, (err, response, body) => {
-//     if (!err && response.statusCode < 400) {
-//       let stockData = JSON.parse(body);
-//       let startDatePrices =
-//         stockData["Time Series (Daily)"][qParams["startDate"]];
-//       let avgStartDatePrice = averagePrices(startDatePrices);
-//       console.log(avgStartDatePrice);
-//       context.startSPYprice = avgStartDatePrice;
-//       context.startSPYshares = qParams["startValue"] / avgStartDatePrice;
-//       res.render("myAssets", context);
-//     } else {
-//       if (response) {
-//         console.log(response.statusCode);
-//       }
-//       res.render("/my-assets", context);
-//       next(err);
-//     }
-//   });
-// });
 
 app.post("/my-assets", (req, res, next) => {
   let input = {
@@ -142,35 +99,69 @@ app.post("/my-assets", (req, res, next) => {
   //   endDate: "2020-07-22",
   //   endValue: 3234,
   // };
-  // if (input.startDate >= input.endDate) {
-  //   // deal with this
-  // }
-  request(URL, (err, response, body) => {
-    if (!err && res.statusCode < 400) {
-      let stockData = JSON.parse(body);
-      let startDatePrice = averagePrices(
-        stockData["Time Series (Daily)"][input.startDate]
-      );
-      let endDatePrice = averagePrices(
-        stockData["Time Series (Daily)"][input.endDate]
-      );
-      calcData = {
-        startPrice: startDatePrice,
-        endPrice: endDatePrice,
-        startValue: input.startValue,
-        endValue: input.endValue,
-      };
-      result = calculateChange(calcData);
-      let context = { assetsIsActive: "active", input, result };
-      res.render("myAssets", context);
-    } else {
-      if (response) {
-        console.log(response.statusCode);
+  if (isValidDate(input)) {
+    request(URL, (err, response, body) => {
+      if (!err && res.statusCode === 200) {
+        let stockData = JSON.parse(body);
+        let startDatePrice = -1;
+        if (stockData["Time Series (Daily)"].hasOwnProperty(input.startDate)) {
+          startDatePrice = averagePrices(
+            stockData["Time Series (Daily)"][input.startDate]
+          );
+        }
+        let endDatePrice = -1;
+        if (stockData["Time Series (Daily)"].hasOwnProperty(input.endDate)) {
+          endDatePrice = averagePrices(
+            stockData["Time Series (Daily)"][input.endDate]
+          );
+        }
+        if (startDatePrice > 0 && endDatePrice > 0) {
+          let calcData = {
+            startPrice: startDatePrice,
+            endPrice: endDatePrice,
+            startValue: input.startValue,
+            endValue: input.endValue,
+          };
+          let result = calculateChange(calcData);
+          let context = { assetsIsActive: "active", input, result };
+          res.render("myAssets", context);
+        } else {
+          let context = { assetsIsActive: "active", error: true };
+          res.render("myAssets", context);
+        }
+      } else {
+        if (response) {
+          console.log(response.statusCode);
+        }
+        next(err);
       }
-      next(err);
-    }
-  });
+    });
+  } else {
+    let context = { assetsIsActive: "active", error: true };
+    res.render("myAssets", context);
+  }
 });
+
+function isValidDate(input) {
+  let today = new Date();
+  let month = ("0" + (today.getMonth() + 1)).slice(-2);
+  let date = ("0" + today.getDate()).slice(-2);
+  let todayDate = `${today.getFullYear()}-${month}-${date}`;
+  return (
+    input.startDate < input.endDate &&
+    input.startDate < todayDate &&
+    input.endDate < todayDate &&
+    !isWeekend(input.startDate) &&
+    !isWeekend(input.endDate)
+  );
+}
+
+function isWeekend(date) {
+  // convert "-" to "/" to prevent timezone change
+  let date2 = date.replace(/-/g, "/");
+  let d2 = new Date(date2);
+  return d2.getDay() === 0 || d2.getDay() === 6;
+}
 
 function calculateChange(data) {
   let marketChange = (data.endPrice - data.startPrice) / data.startPrice;
@@ -190,12 +181,16 @@ function calculateChange(data) {
 }
 
 function averagePrices(data) {
-  delete data["5. volume"];
-  let sum = 0;
-  for (let param in data) {
-    sum += parseFloat(data[param]);
+  try {
+    delete data["5. volume"];
+    let sum = 0;
+    for (let param in data) {
+      sum += parseFloat(data[param]);
+    }
+    return sum / 4;
+  } catch {
+    return -1;
   }
-  return sum / 4;
 }
 
 app.use((req, res) => {

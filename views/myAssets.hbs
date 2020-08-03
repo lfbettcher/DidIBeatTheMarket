@@ -1,31 +1,51 @@
 {{>menu}}
-<h1>Did I beat the market?</h1>
 <section id="myAssets">
-  <h2>Compare your overall portfolio value</h2>
-  <form action="/my-assets" id="enterMyAssets" method="post">
-    <fieldset>
-      <legend>Enter your data</legend>
-      <label for="startDate">
-        Start Date:
-        <input type="date" name="startDate" id="startDate">
-      </label>
-      <label for="startValue">
-        Start Value $
-        <input type="number" step="0.01" name="startValue" id="startValue">
-      </label>
-      <label for="endDate">
-        End Date:
-        <input type="date" name="endDate" id="endDate">
-      </label>
-      <label for="endValue">
-        End Value $
-        <input type="number" step="0.01" name="endValue" id="endValue">
-      </label>
-      <input type="submit" id="submitMyAssets">
-    </fieldset>
-  </form>
-  <br>
-  <div>
+  <div id="myAssetInput">
+    <h2>Did <strong>I</strong> beat the market?</h2>
+    <p>
+      Compare your portfolio's performance to the overall market's value
+      over a specific span of time.
+    </p>
+    <form action="/my-assets" id="enterMyAssets" method="post">
+      <fieldset>
+        <legend>
+          Enter the asset values on the starting and ending dates.
+        </legend>
+        <ul>
+          <li>
+            <label for="startValue">
+              My assets were worth $
+              <input type="number" step="0.01" name="startValue" id="startValue">
+            </label>
+            <label for="startDate">
+              on the starting date of
+              <input type="date" name="startDate" id="startDate">
+            </label>
+          </li>
+          <li>
+            <label for="endValue">
+              My assets were worth $
+              <input type="number" step="0.01" name="endValue" id="endValue">
+            </label>
+            <label for="endDate">
+              on the ending date of
+              <input type="date" name="endDate" id="endDate">
+            </label>
+          </li>
+          <li>
+            <input type="submit" id="submitMyAssets" value="Judge Me As A Person">
+          </li>
+        </ul>
+      </fieldset>
+    </form>
+  </div>
+  {{#if error}}
+  <h3>Invalid dates. Please try again. Dates must be weekdays, before today, non-holidays,
+      and start date must be before end date.</h3>
+  {{else}}
+  {{#if input}}
+  <div id="myAssetResultArea">
+    <h1>So: Did I Beat The Market?</h1>
     <table id="myAssetResult">
       <thead>
         <tr>
@@ -50,11 +70,14 @@
         </tr>
       </tbody>
     </table>
-    <h1>So did I?</h1>
     {{#if result.beat}}
-    <h2>YOU BEAT THE MARKET</h2>
+    <h2>YOU BEAT THE MARKET, WINNER!</h2>
+    <img class="resultImage" src="images/stonks.png" alt="STONKS!">
     {{else}}
-    <h2>NO</h2>
+    <h1>NO, YOU LOSE LOSER!</h1>
+    <img class="resultImage" src="images/not_stonks.jpg" alt="NOT STONKS!">
     {{/if}}
   </div>
+  {{/if}}
+  {{/if}}
 </section>

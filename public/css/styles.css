@@ -5,15 +5,22 @@
 body {
   font-family: sans-serif;
   font-size: 14pt;
+  color: #333;
+  background-color: white;
 }
 
 header {
-  background-color: darkgreen;
+  background-color: forestgreen;
 }
 
-h1 {
+h1,
+h2,
+h3,
+h4,
+h5 {
   text-align: center;
   margin: 20px;
+  color: forestgreen;
 }
 
 /* MENU BAR */
@@ -78,12 +85,113 @@ a.active {
 }
 
 /* QUICK QUOTE */
+#getQuote {
+  background-color: slategray;
+  color: white;
+  align-items: center;
+  text-align: center;
+  margin: auto;
+  padding: 1em 0em;
+  justify-content: center;
+}
+
+#getQuote h2,
+#getQuote h3 {
+  color: white;
+  padding: 0.2em 0em 0.3em;
+}
+
+.quoteInput,
+.quoteOutput {
+  align-items: center;
+  padding: 0.7em;
+}
+
+.quoteOutput {
+  color: #ddd;
+}
+
+.quoteOutput li {
+  padding: 0.2em 0em 0.3em;
+  color: #ddd;
+}
+
+.quoteOutput ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.quoteInput h2 {
+  padding-bottom: 0.5em;
+}
 
 /* MY ASSETS */
 table,
 td,
 th {
-  border: thin solid darkgreen;
+  border: 1px solid whitesmoke;
+  border-collapse: collapse;
+  padding: 0.5em;
+  margin: 0;
+}
+
+table {
+  max-width: 800px;
+  margin: 0 auto 0;
+}
+
+#enterMyAssets ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+#enterMyAssets {
+  margin: 1.2em auto 0.3em;
+  max-width: 800px;
+}
+
+#myAssetInput {
+  padding: 1em 3em 2em;
+  text-align: center;
+  align-items: center;
+}
+
+#myAssetInput p,
+#myAssetInput li {
+  text-align: center;
+  padding: 0.3em 0em 0.2em;
+}
+
+#myAssetResultArea {
+  background-color: lightslategray;
+  color: white;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  padding: 1.5em 0em 1.5em;
+}
+
+#myAssetResultArea * {
+  color: white;
+}
+
+#submitMyAssets,
+#submit-funds {
+  color: white;
+  background-color: green;
+  height: 2em;
+  min-width: 15em;
+  font-size: 1.2em;
+  border-radius: 0.5em;
+  padding: 0;
+  margin: 0;
+}
+
+.resultImage {
+  width: 800px;
+  margin: auto;
 }
 
 /* SCROLL BOX */
@@ -108,13 +216,6 @@ optgroup {
 
 #submit-funds {
   display: flex;
-  margin: auto;
-  padding: 10px;
-}
-
-#getQuote {
-  display: flex;
-  align-content: center;
   margin: auto;
   padding: 10px;
 }
