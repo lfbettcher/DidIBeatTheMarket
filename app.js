@@ -6,7 +6,7 @@ const credentials = require("./credentials.js");
 const stock = require("./stock");
 
 const app = express();
-app.set("port", 3005);
+app.set("port", 3000);
 
 app.engine("hbs", exphbs({ extname: "hbs" }));
 app.set("view engine", "hbs");
@@ -37,17 +37,16 @@ const getBodyParams = (req, res, next) => {
 };
 app.use(getBodyParams);
 
-const getStock = (obj) => {
+const getStockNow = (obj) => {
   return stock
     .makeRequest(
-      `query?function=TIME_SERIES_DAILY&symbol=${obj.stockSymbol}&apikey=${credentials.avKey}`
+      `query?function=TIME_SERIES_INTRADAY&symbol=${obj.stockSymbol}&interval=1min&apikey=${credentials.avKey}`
     )
     .then((response) => {
-      console.log(response);
-      let dayData = response.data["Time Series (Daily)"]["2020-07-13"];
-      let dayAvg = averagePrices(dayData);
-      console.log(dayAvg);
-      obj.stockData = dayAvg;
+      let priceData = response.data["Time Series (1min)"];
+      let prices = priceData[Object.keys(priceData)[0]];
+      let price = prices[Object.keys(prices)[0]];
+      obj.stockData = Number(price).toFixed(2);
     });
 };
 
@@ -62,9 +61,11 @@ app.get("/", (req, res) => {
   // console.log(req.session.id);
   // console.log(`========================`);
   // console.log(req.session.cookie);
+  req.session.homeIsActive = "active";
   res.render("home", req.session);
 });
 
+// keeps a running list of stock quote prices
 app.post("/", (req, res) => {
   if (req.session.stocks) {
     req.session.stocks.push(req.body);
@@ -73,26 +74,18 @@ app.post("/", (req, res) => {
   }
   let promises = [];
   req.session.stocks.forEach((stock) => {
-    promises.push(getStock(stock));
+    promises.push(getStockNow(stock));
   });
+  // req.session.homeIsActive = "active";
   Promise.all(promises).then((values) => {
     res.render("home", req.session);
   });
 });
-// app.get("/", (req, res, next) => {
-//   let context = { homeIsActive: "active" };
-//   if (!req.session.name) {
-//     res.render("home", context);
-//     return;
-//   }
-//   context.name = req.session.name;
-//   res.render("home", context);
-// });
 
-// app.get("/my-assets", (req, res) => {
-//   let context = { assetsIsActive: "active" };
-//   res.render("myAssets", context);
-// });
+app.get("/my-assets", (req, res) => {
+  let context = { assetsIsActive: "active" };
+  res.render("myAssets", context);
+});
 
 app.get("/performance", (req, res) => {
   let context = { performanceIsActive: "active" };
@@ -106,69 +99,69 @@ app.get("/about", (req, res) => {
 
 let queryType = "TIME_SERIES_DAILY";
 let stockSymbol = "SPY";
-const prices = ["1. open", "2. high", "3. low", "4. close"];
-const URL = `https://www.alphavantage.co/query?function=${queryType}&symbol=${stockSymbol}&apikey=${credentials.alphavantageKey}`;
+const URL = `https://www.alphavantage.co/query?function=${queryType}&symbol=${stockSymbol}&apikey=${credentials.avKey}`;
 
-app.get("/my-assets", (req, res, next) => {
-  let qParams = [];
-  for (let p in req.query) {
-    qParams.push({ name: p, value: req.query[p] });
-  }
-  let context = { assetsIsActive: "active" };
-  context.dataList = qParams;
-  request(URL, (err, response, body) => {
-    if (!err && response.statusCode < 400) {
-      let stockData = JSON.parse(body);
-      let startDatePrices =
-        stockData["Time Series (Daily)"][qParams["startDate"]];
-      let avgStartDatePrice = averagePrices(startDatePrices);
-      console.log(avgStartDatePrice);
-      context.startSPYprice = avgStartDatePrice;
-      context.startSPYshares = qParams["startValue"] / avgStartDatePrice;
-      res.render("myAssets", context);
-    } else {
-      if (response) {
-        console.log(response.statusCode);
-      }
-      res.render("/my-assets", context);
-      next(err);
-    }
-  });
-});
-// let sentData = [];
-// console.log(req.query);
-// for (let param in req.query) {
-//   sentData.push({ name: param, value: req.query[param] });
-// }
-// res.locals.queryParams = sentData;
-// context.sentData = res.locals.queryParams;
-// console.log(context.sentData);
-// res.render("myAssets", context);
+// app.get("/my-assets", (req, res, next) => {
+//   let qParams = [];
+//   for (let p in req.query) {
+//     qParams.push({ name: p, value: req.query[p] });
+//   }
+//   let context = { assetsIsActive: "active" };
+//   context.dataList = qParams;
+//   request(URL, (err, response, body) => {
+//     if (!err && response.statusCode < 400) {
+//       let stockData = JSON.parse(body);
+//       let startDatePrices =
+//         stockData["Time Series (Daily)"][qParams["startDate"]];
+//       let avgStartDatePrice = averagePrices(startDatePrices);
+//       console.log(avgStartDatePrice);
+//       context.startSPYprice = avgStartDatePrice;
+//       context.startSPYshares = qParams["startValue"] / avgStartDatePrice;
+//       res.render("myAssets", context);
+//     } else {
+//       if (response) {
+//         console.log(response.statusCode);
+//       }
+//       res.render("/my-assets", context);
+//       next(err);
+//     }
+//   });
 // });
 
 app.post("/my-assets", (req, res, next) => {
-  // let input = {
-  //   startDate: req.body.startDate,
-  //   startValue: req.body.startValue,
-  //   endDate: req.body.endDate,
-  //   endValue: req.body.endValue,
-  // };
-  // for faster testing
   let input = {
-    startDate: "2020-07-09",
-    startValue: 2134,
-    endDate: "2020-07-22",
-    endValue: 1234,
+    startDate: req.body.startDate,
+    startValue: req.body.startValue,
+    endDate: req.body.endDate,
+    endValue: req.body.endValue,
   };
-  let context = {};
+  // for faster testing
+  // let input = {
+  //   startDate: "2020-07-09",
+  //   startValue: 2134,
+  //   endDate: "2020-07-22",
+  //   endValue: 3234,
+  // };
+  // if (input.startDate >= input.endDate) {
+  //   // deal with this
+  // }
   request(URL, (err, response, body) => {
     if (!err && res.statusCode < 400) {
       let stockData = JSON.parse(body);
-      let startDatePrices = stockData["Time Series (Daily)"][input.startDate];
-      let avgStartDatePrice = averagePrices(startDatePrices);
-      console.log(avgStartDatePrice);
-      context.startSPYprice = avgStartDatePrice;
-      context.startSPYshares = input.startValue / avgStartDatePrice;
+      let startDatePrice = averagePrices(
+        stockData["Time Series (Daily)"][input.startDate]
+      );
+      let endDatePrice = averagePrices(
+        stockData["Time Series (Daily)"][input.endDate]
+      );
+      calcData = {
+        startPrice: startDatePrice,
+        endPrice: endDatePrice,
+        startValue: input.startValue,
+        endValue: input.endValue,
+      };
+      result = calculateChange(calcData);
+      let context = { assetsIsActive: "active", input, result };
       res.render("myAssets", context);
     } else {
       if (response) {
@@ -178,6 +171,23 @@ app.post("/my-assets", (req, res, next) => {
     }
   });
 });
+
+function calculateChange(data) {
+  let marketChange = (data.endPrice - data.startPrice) / data.startPrice;
+  let marketChangePercent = (marketChange * 100).toFixed(2);
+  let marketEndValue = (data.startValue * (1 + marketChange)).toFixed(2);
+  let myChangePercent = (
+    ((data.endValue - data.startValue) / data.startValue) *
+    100
+  ).toFixed(2);
+  let beat = myChangePercent > marketChangePercent;
+  return {
+    marketEndValue: marketEndValue,
+    marketChangePercent: marketChangePercent,
+    myChangePercent: myChangePercent,
+    beat,
+  };
+}
 
 function averagePrices(data) {
   delete data["5. volume"];

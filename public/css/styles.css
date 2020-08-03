@@ -1,6 +1,5 @@
 * {
   margin: 0;
-  padding: 0;
 }
 
 body {
@@ -23,6 +22,7 @@ h1 {
 }
 
 .menu-list {
+  padding: 0;
   display: flex;
   list-style: none; /* removes bullets from list */
 }
@@ -108,6 +108,13 @@ optgroup {
 
 #submit-funds {
   display: flex;
+  margin: auto;
+  padding: 10px;
+}
+
+#getQuote {
+  display: flex;
+  align-content: center;
   margin: auto;
   padding: 10px;
 }

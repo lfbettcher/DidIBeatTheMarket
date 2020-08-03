@@ -2,7 +2,7 @@
 <h1>Did I beat the market?</h1>
 <section id="myAssets">
   <h2>Compare your overall portfolio value</h2>
-  <form action="/my-assets" id="enterMyAssets" method="get">
+  <form action="/my-assets" id="enterMyAssets" method="post">
     <fieldset>
       <legend>Enter your data</legend>
       <label for="startDate">
@@ -30,25 +30,31 @@
       <thead>
         <tr>
           <th></th>
-          <th>Asset/Fund</th>
-          <th>Start Date Value</th>
-          <th>End Date Value</th>
+          <th>Start Date Value ({{input.startDate}})</th>
+          <th>End Date Value ({{input.endDate}})</th>
           <th>Percent Change</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>The Market</td>
-          <td>{{startSPYprice}}</td>
-          <td>{{startSPYshares}}</td>
+          <td>${{input.startValue}}</td>
+          <td>${{result.marketEndValue}}</td>
+          <td>{{result.marketChangePercent}}%</td>
+        </tr>
+        <tr>
+          <td>Your Portfolio</td>
+          <td>${{input.startValue}}</td>
+          <td>${{input.endValue}}</td>
+          <td>{{result.myChangePercent}}%</td>
         </tr>
       </tbody>
     </table>
-    {{#if startSPYprice}}
-    <p>Start SPY price: {{startSPYprice}}</p>
-    {{/if}}
-    {{#if startSPYshares}}
-      <p>Start SPY shares: {{startSPYshares}}</p>
+    <h1>So did I?</h1>
+    {{#if result.beat}}
+    <h2>YOU BEAT THE MARKET</h2>
+    {{else}}
+    <h2>NO</h2>
     {{/if}}
   </div>
 </section>

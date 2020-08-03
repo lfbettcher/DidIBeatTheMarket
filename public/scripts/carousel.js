@@ -1,5 +1,5 @@
 const IMAGES = [
-  "images/445-800x450.jpg",
+  "images/700-800x450.jpg",
   "images/653-800x450.jpg",
   "images/691-800x450.jpg",
 ];
