@@ -1,6 +1,7 @@
 {{>menu}}
 <h1>Did a Fund Beat the Market?</h1>
-<form id="select-funds-form" action="/performance" method="get" name="fundsForm">
+<h3>Select one or more funds</h3>
+<form id="select-funds-form" action="/performance" method="POST" name="fundsForm">
   <select form="select-funds-form" id="select-funds" name="funds" multiple>
     <optgroup label="Large Blend">
       <option value="SPY">SPDR S&P 500 ETF (SPY)</option>
@@ -28,5 +29,8 @@
     </optgroup>
   </select>
   <br>
-  <input id="submit-funds" type="submit" value="See Who Sucks">
+  <input id="submit-funds" type="submit" value="See Chart(s)">
 </form>
+{{#each funds}}
+<div>{{>chart symbol=name}}</div>
+{{/each}}

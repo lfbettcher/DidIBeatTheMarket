@@ -59,14 +59,14 @@ app.post("/", (req, res) => {
   req.session.stocks.forEach((stock) => {
     promises.push(getStockNow(stock));
   });
-  // req.session.homeIsActive = "active";
   Promise.all(promises).then((values) => {
     res.render("home", req.session);
   });
 });
 
 app.get("/my-assets", (req, res) => {
-  let context = { assetsIsActive: "active" };
+  let todayDate = getTodayDate();
+  let context = { assetsIsActive: "active", today: todayDate };
   res.render("myAssets", context);
 });
 
@@ -80,25 +80,33 @@ app.get("/about", (req, res) => {
   res.render("about", context);
 });
 
+app.post("/performance", (req, res) => {
+  let selectedFunds = req.body.funds;
+  let fundsArr = [];
+  if (typeof selectedFunds === "string") {
+    fundsArr.push({ name: selectedFunds });
+  } else {
+    selectedFunds.forEach((fund) => {
+      fundsArr.push({ name: fund });
+    });
+  }
+  let context = { performanceIsActive: "active", funds: fundsArr };
+  res.render("performance", context);
+});
+
 // settings for market comparison
 let queryType = "TIME_SERIES_DAILY";
 let stockSymbol = "SPY";
-const URL = `https://www.alphavantage.co/query?function=${queryType}&symbol=${stockSymbol}&apikey=${credentials.avKey}`;
+const URL = `https://www.alphavantage.co/query?function=${queryType}&symbol=${stockSymbol}&outputsize=full&apikey=${credentials.avKey}`;
 
 app.post("/my-assets", (req, res, next) => {
+  let context = { assetsIsActive: "active", today: getTodayDate() };
   let input = {
     startDate: req.body.startDate,
     startValue: req.body.startValue,
     endDate: req.body.endDate,
     endValue: req.body.endValue,
   };
-  // for faster testing
-  // let input = {
-  //   startDate: "2020-07-09",
-  //   startValue: 2134,
-  //   endDate: "2020-07-22",
-  //   endValue: 3234,
-  // };
   if (isValidDate(input)) {
     request(URL, (err, response, body) => {
       if (!err && res.statusCode === 200) {
@@ -122,11 +130,12 @@ app.post("/my-assets", (req, res, next) => {
             startValue: input.startValue,
             endValue: input.endValue,
           };
-          let result = calculateChange(calcData);
-          let context = { assetsIsActive: "active", input, result };
+          context.input = input;
+          context.result = calculateChange(calcData);
+          console.log(context);
           res.render("myAssets", context);
         } else {
-          let context = { assetsIsActive: "active", error: true };
+          context.error = true;
           res.render("myAssets", context);
         }
       } else {
@@ -137,16 +146,13 @@ app.post("/my-assets", (req, res, next) => {
       }
     });
   } else {
-    let context = { assetsIsActive: "active", error: true };
+    context.error = true;
     res.render("myAssets", context);
   }
 });
 
 function isValidDate(input) {
-  let today = new Date();
-  let month = ("0" + (today.getMonth() + 1)).slice(-2);
-  let date = ("0" + today.getDate()).slice(-2);
-  let todayDate = `${today.getFullYear()}-${month}-${date}`;
+  let todayDate = getTodayDate();
   return (
     input.startDate < input.endDate &&
     input.startDate < todayDate &&
@@ -154,6 +160,13 @@ function isValidDate(input) {
     !isWeekend(input.startDate) &&
     !isWeekend(input.endDate)
   );
+}
+
+function getTodayDate() {
+  let today = new Date();
+  let month = ("0" + (today.getMonth() + 1)).slice(-2);
+  let date = ("0" + today.getDate()).slice(-2);
+  return `${today.getFullYear()}-${month}-${date}`;
 }
 
 function isWeekend(date) {
