@@ -33,6 +33,14 @@ a {
   color: forestgreen;
 }
 
+footer {
+  text-align: center;
+  background-color: slategray;
+}
+
+.source {
+  font-size: 10pt;
+}
 /* MENU BAR */
 .menu {
   padding: 15px 15px 15px 0;
@@ -53,9 +61,6 @@ a {
 .menu-item a {
   color: white;
   text-decoration: none; /* menu links not underlined */
-}
-
-.menu-item a {
   padding: 20px;
 }
 
@@ -110,20 +115,20 @@ a.active {
   align-items: center;
   text-align: center;
   margin: auto;
-  padding: 1em 0em;
+  padding: 1em 0 2em;
   justify-content: center;
 }
 
 #getQuote h2,
 #getQuote h3 {
   color: white;
-  padding: 0.2em 0em 0.3em;
+  padding: 0.1em 0 0.1em;
 }
 
 .quoteInput,
 .quoteOutput {
   align-items: center;
-  padding: 0.7em;
+  padding: 0.5em;
 }
 
 .quoteOutput {
@@ -201,7 +206,8 @@ table {
 }
 
 #submitMyAssets,
-#submit-funds {
+#submit-funds,
+.downloadBtn {
   color: white;
   background-color: green;
   height: 2em;
@@ -213,7 +219,7 @@ table {
 }
 
 .resultImage,
-#wot {
+#aboutImage {
   width: 800px;
   margin: auto;
 }
@@ -244,13 +250,14 @@ optgroup {
   padding: 10px;
 }
 
+/* ABOUT */
 #aboutBody {
   max-width: 800px;
   margin: 0 auto;
   padding: 2em;
 }
 
-footer {
-  text-align: center;
-  background-color: slategray;
+.downloadBtnArea {
+  display: flex;
+  justify-content: center;
 }

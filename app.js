@@ -206,8 +206,8 @@ app.use((err, req, res, next) => {
 
 app.listen(app.get("port"), () => {
   console.log(
-    `Express started on http://localhost:${app.get(
-      "port"
-    )}; press Ctrl-C to terminate.`
+      `Express started on http://${process.env.HOSTNAME}:${app.get(
+          "port"
+      )}; press Ctrl-C to terminate.`
   );
 });

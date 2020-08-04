@@ -13,6 +13,7 @@
     "express": "^4.17.1",
     "express-handlebars": "^4.0.4",
     "express-session": "^1.17.1",
+    "forever": "^3.0.0",
     "request": "^2.88.2"
   }
 }
