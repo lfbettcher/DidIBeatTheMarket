@@ -6,7 +6,7 @@ const credentials = require("./credentials.js");
 const stock = require("./stock");
 
 const app = express();
-app.set("port", 3000);
+app.set("port", 9843);
 
 app.engine("hbs", exphbs({ extname: "hbs" }));
 app.set("view engine", "hbs");
@@ -26,24 +26,14 @@ const getStockNow = (obj) => {
       let priceData = response.data["Time Series (1min)"];
       let prices = priceData[Object.keys(priceData)[0]];
       let price = prices[Object.keys(prices)[0]];
-      obj.stockData = Number(price).toFixed(2);
+      obj.stockData = "$" + Number(price).toFixed(2);
     })
     .catch((e) => {
-      obj.stockData = " Invalid stock symbol";
+      obj.stockData = "not a stock symbol";
     });
 };
 
 app.get("/", (req, res) => {
-  // console.log(`========================`);
-  // console.log(req);
-  console.log(`========================`);
-  console.log(req.sessionStore);
-  console.log(`========================`);
-  // console.log(req.session);
-  // console.log(`========================`);
-  // console.log(req.session.id);
-  // console.log(`========================`);
-  // console.log(req.session.cookie);
   req.session.homeIsActive = "active";
   res.render("home", req.session);
 });
@@ -132,7 +122,6 @@ app.post("/my-assets", (req, res, next) => {
           };
           context.input = input;
           context.result = calculateChange(calcData);
-          console.log(context);
           res.render("myAssets", context);
         } else {
           context.error = true;
@@ -180,11 +169,9 @@ function calculateChange(data) {
   let marketChange = (data.endPrice - data.startPrice) / data.startPrice;
   let marketChangePercent = (marketChange * 100).toFixed(2);
   let marketEndValue = (data.startValue * (1 + marketChange)).toFixed(2);
-  let myChangePercent = (
-    ((data.endValue - data.startValue) / data.startValue) *
-    100
-  ).toFixed(2);
-  let beat = myChangePercent > marketChangePercent;
+  let myChange = (data.endValue - data.startValue) / data.startValue;
+  let myChangePercent = (myChange * 100).toFixed(2);
+  let beat = myChange > marketChange;
   return {
     marketEndValue: marketEndValue,
     marketChangePercent: marketChangePercent,
@@ -201,7 +188,7 @@ function averagePrices(data) {
       sum += parseFloat(data[param]);
     }
     return sum / 4;
-  } catch {
+  } catch (e) {
     return -1;
   }
 }

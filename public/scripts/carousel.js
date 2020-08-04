@@ -1,7 +1,7 @@
 const IMAGES = [
-  "images/700-800x450.jpg",
-  "images/653-800x450.jpg",
-  "images/691-800x450.jpg",
+  "images/stock_screen.jpg",
+  "images/math.jpg",
+  "images/wall_street.jpg",
 ];
 const NUM_OF_IMAGES = IMAGES.length;
 let imgNum = 0;

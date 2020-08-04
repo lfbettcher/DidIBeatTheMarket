@@ -9,7 +9,7 @@
   <h3>Quick Stock Quotes</h3>
   <ul>
     {{#each stocks}}
-    <li>The current price of {{stockSymbol}} is ${{stockData}}</li>
+      <li>The current price of <span id="displayStockSymbol">{{stockSymbol}}</span> is {{stockData}}</li>
     {{/each}}
   </ul>
 </div>
